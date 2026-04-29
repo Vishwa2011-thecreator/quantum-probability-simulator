@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Qubit Simulator</title>
+</head>
+<body>
+    <h1>Qubit Simulator</h1>
+
+    <label>Probability of 0 (0 to 1):</label>
+    <input type="number" id="prob" step="0.01" value="0.7">
+
+    <button onclick="run()">Run 100 Trials</button>
+
+    <p id="output"></p>
+
+    <script>
+        function measureQubit(prob0) {
+            let r = Math.random();
+            return r <= prob0 ? 0 : 1;
+        }
+
+        function run() {
+            let prob0 = parseFloat(document.getElementById("prob").value);
+            let count0 = 0;
+            let count1 = 0;
+
+            for (let i = 0; i < 100; i++) {
+                let result = measureQubit(prob0);
+                if (result === 0) count0++;
+                else count1++;
+            }
+
+            document.getElementById("output").innerHTML =
+                `0s: ${count0} <br>
+                 1s: ${count1} <br>
+                 %0: ${(count0/100*100).toFixed(2)}% <br>
+                 %1: ${(count1/100*100).toFixed(2)}%`;
+        }
+    </script>
+</body>
+</html>
