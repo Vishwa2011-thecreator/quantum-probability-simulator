@@ -1,145 +1,804 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Qubit Simulator</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            color: white;
-            text-align: center;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            overflow: hidden;
-        }
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>⚛️ Qubit Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#07111a;
+      --panel:rgba(255,255,255,0.05);
+      --border:rgba(255,255,255,0.10);
+      --border2:rgba(255,255,255,0.18);
+      --text:#e8f0fe;
+      --muted:rgba(255,255,255,0.55);
+      --dim:rgba(255,255,255,0.25);
+      --cyan:#22d3ee;
+      --blue:#3b82f6;
+      --green:#10b981;
+      --amber:#f59e0b;
+      --red:#ef4444;
+      --purple:#a78bfa;
+    }
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Outfit',sans-serif;
+      background:linear-gradient(160deg,#07111a 0%,#0d1f2d 50%,#0a1628 100%);
+      color:var(--text);
+      min-height:100vh;
+      overflow-x:hidden;
+    }
 
-        h1 {
-            margin-top: 20px;
-        }
+    /* stars */
+    .stars{
+      position:fixed;inset:0;pointer-events:none;z-index:0;
+      background:
+        radial-gradient(1px 1px at 8%  12%, white, transparent),
+        radial-gradient(1px 1px at 22% 65%, white, transparent),
+        radial-gradient(1.5px 1.5px at 38% 28%, white, transparent),
+        radial-gradient(1px 1px at 54% 78%, white, transparent),
+        radial-gradient(1px 1px at 68% 18%, white, transparent),
+        radial-gradient(1.5px 1.5px at 79% 52%, white, transparent),
+        radial-gradient(1px 1px at 91% 8%,  white, transparent),
+        radial-gradient(1px 1px at 14% 88%, white, transparent),
+        radial-gradient(1px 1px at 61% 42%, white, transparent),
+        radial-gradient(1.5px 1.5px at 33% 72%, white, transparent),
+        radial-gradient(1px 1px at 84% 33%, white, transparent),
+        radial-gradient(1px 1px at 47% 10%, white, transparent),
+        radial-gradient(1px 1px at 96% 74%, white, transparent);
+      opacity:0.5;
+      animation:twinkle 5s ease-in-out infinite alternate;
+    }
+    @keyframes twinkle{0%{opacity:0.35}100%{opacity:0.65}}
 
-        .container {
-            margin-top: 40px;
-        }
+    .page{position:relative;z-index:1;max-width:820px;margin:0 auto;padding:2rem 1.25rem 5rem}
 
-        .card {
-            background: rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 15px;
-            width: 300px;
-            margin: auto;
-            backdrop-filter: blur(10px);
-        }
+    /* header */
+    header{text-align:center;padding:2rem 0 1.5rem}
+    .site-tag{
+      display:inline-block;
+      font-family:'JetBrains Mono',monospace;font-size:11px;
+      text-transform:uppercase;letter-spacing:0.15em;
+      color:var(--cyan);border:1px solid rgba(34,211,238,0.3);
+      background:rgba(34,211,238,0.07);padding:5px 16px;
+      border-radius:999px;margin-bottom:1.25rem;
+    }
+    header h1{
+      font-size:clamp(2rem,6vw,3.2rem);font-weight:800;
+      letter-spacing:-0.03em;line-height:1.1;margin-bottom:0.6rem;
+    }
+    header h1 span{color:var(--cyan);text-shadow:0 0 30px rgba(34,211,238,0.4)}
+    header p{font-size:14px;color:var(--muted)}
 
-        input[type="range"] {
-            width: 100%;
-        }
+    /* explainer banner */
+    .explainer{
+      background:rgba(34,211,238,0.06);
+      border:1px solid rgba(34,211,238,0.2);
+      border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;
+    }
+    .explainer h2{
+      font-size:17px;font-weight:700;margin-bottom:1rem;
+      display:flex;align-items:center;gap:8px;
+    }
+    .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+    .step{
+      background:rgba(255,255,255,0.04);border:1px solid var(--border);
+      border-radius:12px;padding:1rem;
+    }
+    .step-num{
+      font-family:'JetBrains Mono',monospace;font-size:11px;
+      color:var(--cyan);font-weight:500;margin-bottom:6px;
+      text-transform:uppercase;letter-spacing:0.1em;
+    }
+    .step h3{font-size:14px;font-weight:700;margin-bottom:4px}
+    .step p{font-size:13px;color:var(--muted);line-height:1.55}
 
-        button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 10px;
-            background: #00c6ff;
-            color: black;
-            font-weight: bold;
-            cursor: pointer;
-        }
+    /* analogy box */
+    .analogy{
+      background:rgba(167,139,250,0.07);
+      border:1px solid rgba(167,139,250,0.2);
+      border-radius:16px;padding:1.25rem 1.5rem;
+      margin-bottom:1.5rem;
+      display:flex;gap:1rem;align-items:flex-start;
+    }
+    .analogy-icon{font-size:2rem;flex-shrink:0}
+    .analogy h3{font-size:15px;font-weight:700;color:var(--purple);margin-bottom:4px}
+    .analogy p{font-size:14px;color:var(--muted);line-height:1.6}
+    .analogy strong{color:var(--text)}
 
-        button:hover {
-            background: #00eaff;
-        }
+    /* card */
+    .card{
+      background:var(--panel);border:1px solid var(--border);
+      border-radius:18px;padding:1.75rem;margin-bottom:1.25rem;
+      backdrop-filter:blur(12px);transition:border-color 0.25s;
+    }
+    .card:hover{border-color:var(--border2)}
+    .card-title{
+      font-size:11px;font-weight:700;text-transform:uppercase;
+      letter-spacing:0.12em;color:var(--muted);margin-bottom:1.25rem;
+      display:flex;align-items:center;gap:7px;
+    }
+    .card-title::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 6px var(--cyan);flex-shrink:0}
 
-        #output {
-            margin-top: 15px;
-        }
+    /* probability slider section */
+    .prob-question{
+      font-size:18px;font-weight:700;margin-bottom:6px;
+    }
+    .prob-plain{
+      font-size:14px;color:var(--muted);margin-bottom:1.25rem;line-height:1.55;
+    }
+    .prob-plain strong{color:var(--text)}
 
-        /* Fake 3D Qubit Sphere */
-        .sphere {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #00c6ff, #004e92);
-            margin: 30px auto;
-            animation: spin 6s linear infinite;
-            box-shadow: 0 0 30px #00c6ff;
-        }
+    .slider-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .slider-row label{font-size:14px;font-weight:600;color:var(--muted)}
+    .prob-display{
+      font-family:'JetBrains Mono',monospace;font-size:20px;
+      font-weight:600;color:var(--cyan);
+    }
+    input[type=range]{
+      -webkit-appearance:none;width:100%;height:7px;
+      background:rgba(255,255,255,0.12);border-radius:999px;
+      outline:none;cursor:pointer;margin-bottom:6px;
+    }
+    input[type=range]::-webkit-slider-thumb{
+      -webkit-appearance:none;width:24px;height:24px;border-radius:50%;
+      background:var(--cyan);border:3px solid white;
+      box-shadow:0 0 14px rgba(34,211,238,0.7);
+      cursor:pointer;transition:transform 0.15s;
+    }
+    input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 
-        @keyframes spin {
-            from { transform: rotateY(0deg); }
-            to { transform: rotateY(360deg); }
-        }
+    .slider-ends{
+      display:flex;justify-content:space-between;
+      font-size:12px;color:var(--dim);margin-bottom:1.25rem;
+    }
 
-        /* Background stars */
-        .stars {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: transparent;
-            box-shadow:
-                100px 200px white,
-                300px 400px white,
-                500px 100px white,
-                700px 300px white,
-                900px 200px white;
-            animation: moveStars 20s linear infinite;
-        }
+    /* presets */
+    .preset-q{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px}
+    .presets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1.5rem}
+    .preset{
+      background:rgba(255,255,255,0.04);border:1px solid var(--border);
+      border-radius:11px;padding:10px 6px;cursor:pointer;text-align:center;
+      transition:all 0.18s;
+    }
+    .preset:hover{border-color:rgba(34,211,238,0.4);background:rgba(34,211,238,0.07)}
+    .preset.active{border-color:var(--cyan);background:rgba(34,211,238,0.12);box-shadow:0 0 14px rgba(34,211,238,0.18)}
+    .preset-top{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--text);line-height:1}
+    .preset.active .preset-top{color:var(--cyan)}
+    .preset-bot{font-size:11px;color:var(--dim);margin-top:3px}
+    .preset-bot2{font-size:11px;color:var(--muted);margin-top:2px;font-style:italic}
 
-        @keyframes moveStars {
-            from { transform: translateY(0); }
-            to { transform: translateY(-1000px); }
-        }
-    </style>
+    /* buttons */
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap}
+    .btn-main{
+      flex:1;padding:14px 20px;border:none;border-radius:13px;
+      background:var(--cyan);color:#04111a;
+      font-family:'Outfit',sans-serif;font-size:15px;font-weight:800;
+      cursor:pointer;box-shadow:0 0 24px rgba(34,211,238,0.35);
+      transition:transform 0.15s,box-shadow 0.2s;letter-spacing:0.01em;
+    }
+    .btn-main:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(34,211,238,0.55)}
+    .btn-main:active{transform:scale(0.97)}
+    .btn-sec{
+      padding:14px 18px;border:1px solid var(--border2);border-radius:13px;
+      background:transparent;color:var(--muted);
+      font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;
+      cursor:pointer;transition:all 0.18s;
+    }
+    .btn-sec:hover{background:rgba(255,255,255,0.07);color:var(--text)}
+
+    /* coin animation area */
+    .coin-area{
+      display:flex;flex-direction:column;align-items:center;
+      padding:1rem 0 0.5rem;margin-bottom:1.5rem;
+    }
+    .coin{
+      width:100px;height:100px;border-radius:50%;
+      position:relative;
+      cursor:pointer;
+      transition:transform 0.3s;
+    }
+    .coin-face{
+      position:absolute;inset:0;border-radius:50%;
+      display:flex;align-items:center;justify-content:center;
+      font-size:2.5rem;
+      backface-visibility:hidden;
+    }
+    .coin-front{
+      background:radial-gradient(circle at 35% 30%,#22d3ee,#0369a1 60%,#01243a);
+      box-shadow:0 0 30px rgba(34,211,238,0.5);
+    }
+    .coin-back{
+      background:radial-gradient(circle at 35% 30%,#a78bfa,#6d28d9 60%,#2e1065);
+      box-shadow:0 0 30px rgba(167,139,250,0.5);
+      transform:rotateY(180deg);
+    }
+    .coin-result-lbl{
+      font-size:13px;color:var(--muted);margin-top:10px;
+      font-family:'JetBrains Mono',monospace;
+      min-height:20px;
+    }
+    @keyframes coinFlip{
+      0%  {transform:rotateY(0deg)}
+      50% {transform:rotateY(900deg) scale(1.15)}
+      100%{transform:rotateY(0deg) scale(1)}
+    }
+    @keyframes coinFlip1{
+      0%  {transform:rotateY(0deg)}
+      50% {transform:rotateY(1080deg) scale(1.15)}
+      100%{transform:rotateY(180deg) scale(1)}
+    }
+
+    /* bit stream */
+    .stream-q{font-size:13px;color:var(--muted);margin-bottom:8px}
+    #bitStream{
+      display:flex;flex-wrap:wrap;gap:4px;min-height:62px;
+      padding:10px;background:rgba(0,0,0,0.2);
+      border-radius:12px;border:1px solid var(--border);
+    }
+    .bit{
+      width:21px;height:21px;border-radius:5px;
+      display:flex;align-items:center;justify-content:center;
+      font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;
+      opacity:0;animation:popIn 0.12s ease forwards;
+    }
+    .bit-0{background:rgba(34,211,238,0.15);color:var(--cyan);border:1px solid rgba(34,211,238,0.3)}
+    .bit-1{background:rgba(167,139,250,0.15);color:var(--purple);border:1px solid rgba(167,139,250,0.25)}
+    @keyframes popIn{from{opacity:0;transform:scale(0.3)}to{opacity:1;transform:scale(1)}}
+
+    /* results */
+    .results-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:1.5rem}
+    .result-box{
+      background:rgba(0,0,0,0.2);border-radius:14px;padding:1.25rem;
+      text-align:center;border:1px solid var(--border);
+    }
+    .result-emoji{font-size:2rem;margin-bottom:6px}
+    .result-num{
+      font-family:'JetBrains Mono',monospace;font-size:2.2rem;
+      font-weight:600;line-height:1;margin-bottom:4px;
+    }
+    .r0{color:var(--cyan)}
+    .r1{color:var(--purple)}
+    .result-lbl{font-size:12px;color:var(--muted)}
+    .result-bar{height:5px;border-radius:999px;background:rgba(255,255,255,0.1);margin-top:10px;overflow:hidden}
+    .result-fill{height:100%;border-radius:999px;transition:width 0.5s cubic-bezier(0.34,1.56,0.64,1)}
+    .rf0{background:var(--cyan)}
+    .rf1{background:var(--purple)}
+
+    /* what happened box */
+    .what-box{
+      background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.25);
+      border-radius:13px;padding:1.1rem 1.25rem;margin-bottom:1rem;
+      font-size:14px;line-height:1.6;color:var(--muted);
+    }
+    .what-box strong{color:var(--text)}
+    .what-box .verdict{
+      font-size:15px;font-weight:700;margin-bottom:6px;
+      display:flex;align-items:center;gap:8px;
+    }
+
+    /* compare bars */
+    .compare-lbl{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px}
+    .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+    .bar-key{font-size:12px;color:var(--dim);width:80px;flex-shrink:0;line-height:1.3}
+    .bar-track{flex:1;height:28px;background:rgba(255,255,255,0.06);border-radius:7px;overflow:hidden}
+    .bar-fill{
+      height:100%;border-radius:7px;
+      display:flex;align-items:center;padding:0 8px;
+      font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;
+      transition:width 0.6s cubic-bezier(0.34,1.2,0.64,1);
+      white-space:nowrap;overflow:hidden;
+    }
+    .bf-exp{background:rgba(255,255,255,0.18);color:rgba(255,255,255,0.8)}
+    .bf-0{background:var(--cyan);color:#04111a}
+    .bf-1{background:var(--purple);color:white}
+
+    /* all results */
+    .all-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+    .all-mini{background:rgba(0,0,0,0.18);border:1px solid var(--border);border-radius:12px;padding:1rem}
+    .all-mini-title{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px}
+
+    /* table */
+    .tbl-hdr{display:flex;justify-content:flex-end;margin-bottom:0.75rem}
+    .btn-copy{
+      background:transparent;border:1px solid var(--border2);
+      color:var(--dim);border-radius:9px;padding:6px 14px;
+      font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;
+      cursor:pointer;transition:all 0.18s;
+    }
+    .btn-copy:hover{background:rgba(255,255,255,0.07);color:var(--text)}
+    .tbl-scroll{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    thead th{
+      font-family:'JetBrains Mono',monospace;font-size:10px;
+      text-transform:uppercase;letter-spacing:0.1em;
+      color:rgba(255,255,255,0.3);padding:8px 12px;
+      text-align:left;border-bottom:1px solid var(--border2);white-space:nowrap;
+    }
+    tbody td{
+      font-family:'JetBrains Mono',monospace;font-size:12px;
+      padding:11px 12px;border-bottom:1px solid rgba(255,255,255,0.05);
+    }
+    tbody tr:last-child td{border-bottom:none}
+    tbody tr:hover td{background:rgba(255,255,255,0.025)}
+    td:first-child{font-family:'Outfit',sans-serif;font-weight:600;font-size:13px;color:var(--text)}
+    .empty-row{text-align:center;color:var(--dim);font-style:italic;padding:1.75rem !important;font-family:'Outfit',sans-serif !important;font-size:13px !important}
+    .good{color:var(--green)}.ok{color:var(--amber)}.bad{color:var(--red)}
+
+    /* glossary */
+    .glossary{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+    .gloss-card{
+      background:rgba(255,255,255,0.03);border:1px solid var(--border);
+      border-radius:12px;padding:1rem;
+    }
+    .gloss-term{font-size:13px;font-weight:700;color:var(--cyan);margin-bottom:4px}
+    .gloss-def{font-size:13px;color:var(--muted);line-height:1.55}
+
+    footer{text-align:center;padding:2rem;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,0.2)}
+  </style>
 </head>
-
 <body>
-
 <div class="stars"></div>
+<div class="page">
 
-<h1>⚛️ Qubit Simulator</h1>
+  <!-- Header -->
+  <header>
+    <div class="site-tag">⚛️ Science Fair 2025–26</div>
+    <h1>⚛️ Qubit <span>Simulator</span></h1>
+    <p>Simulating Qubit Measurement Probabilities on a Classical Computer</p>
+    <p style="margin-top:6px">by Vishwajith Sethuraman &nbsp;·&nbsp; Period 1</p>
+  </header>
 
-<div class="sphere"></div>
-
-<div class="container">
-    <div class="card">
-        <label>Probability of 0: <span id="probValue">0.7</span></label>
-        <input type="range" id="prob" min="0" max="1" step="0.01" value="0.7">
-
-        <button onclick="run()">Run 100 Trials</button>
-
-        <div id="output"></div>
+  <!-- Hypothesis -->
+  <div class="analogy" style="margin-bottom:1.5rem">
+    <div class="analogy-icon">💡</div>
+    <div>
+      <h3 style="color:var(--cyan);margin-bottom:4px">Hypothesis</h3>
+      <p>If a qubit is simulated on a classical computer with a set probability for 0 and 1, then after many measurements, the percentage of 0s and 1s will approximate the assigned probabilities — even though each individual measurement is random.</p>
     </div>
-</div>
+  </div>
+
+  <!-- Simulator -->
+  <div class="card">
+    <div class="card-title">Step 1 — Rotate the qubit (like a real quantum computer!)</div>
+
+    <div class="prob-question">Set the rotation angle θ (theta)</div>
+    <div class="prob-plain">
+      In a real quantum computer, you don't set a probability directly — you <strong>rotate the qubit</strong> by an angle θ on the Bloch sphere.
+      The probability is then calculated automatically using the <strong>Born rule: P(0) = cos²(θ/2)</strong>.
+    </div>
+
+    <!-- Live Born rule display -->
+    <div style="background:rgba(34,211,238,0.07);border:1px solid rgba(34,211,238,0.2);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.25rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;text-align:center">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:1.4rem;font-weight:600;color:var(--cyan)" id="thetaDisplay">90°</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">θ (your input)</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--dim)">→</div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:1.4rem;font-weight:600;color:var(--cyan)" id="probDisplay">50%</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">P(0) = cos²(θ/2)</div>
+      </div>
+    </div>
+
+    <div class="slider-row">
+      <label>Rotation angle θ</label>
+      <span style="font-size:12px;color:var(--muted)">0° = always 0 &nbsp;·&nbsp; 90° = 50/50 &nbsp;·&nbsp; 180° = always 1</span>
+    </div>
+    <input type="range" id="probSlider" min="0" max="180" value="90" step="1" oninput="onSlider(this.value)">
+    <div class="slider-ends">
+      <span>← θ = 0° (P(0)=100%)</span>
+      <span>θ = 180° (P(0)=0%) →</span>
+    </div>
+
+    <div class="preset-q">📋 Or pick one of the 4 test levels — each uses a real θ angle:</div>
+    <div class="presets">
+      <button class="preset active" data-theta="90" onclick="setPreset(90,this)">
+        <div class="preset-top">θ = 90°</div>
+        <div class="preset-bot">P(0) = 50%</div>
+        <div class="preset-bot2">Control group</div>
+      </button>
+      <button class="preset" data-theta="48.6" onclick="setPreset(48.6,this)">
+        <div class="preset-top">θ = 48.6°</div>
+        <div class="preset-bot">P(0) ≈ 70%</div>
+        <div class="preset-bot2">Level 2</div>
+      </button>
+      <button class="preset" data-theta="18.6" onclick="setPreset(18.6,this)">
+        <div class="preset-top">θ = 18.6°</div>
+        <div class="preset-bot">P(0) ≈ 90%</div>
+        <div class="preset-bot2">Level 3</div>
+      </button>
+      <button class="preset" data-theta="161.4" onclick="setPreset(161.4,this)">
+        <div class="preset-top">θ = 161.4°</div>
+        <div class="preset-bot">P(0) ≈ 10%</div>
+        <div class="preset-bot2">Level 4</div>
+      </button>
+    </div>
+
+    <!-- Single flip demo -->
+    <div class="coin-area">
+      <div class="coin" id="coin" onclick="singleFlip()">
+        <div class="coin-face coin-front">0️⃣</div>
+        <div class="coin-face coin-back">1️⃣</div>
+      </div>
+      <div class="coin-result-lbl" id="coinLbl">👆 Click the coin for a single flip!</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-main" onclick="run()">🚀 Flip 100 times!</button>
+      <button class="btn-sec" onclick="runAll()">▶▶ Test all 4 levels</button>
+      <button class="btn-sec" style="color:rgba(255,255,255,0.3)" onclick="resetAll()">↺ Reset</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="card" id="resultsCard" style="display:none">
+    <div class="card-title">Step 2 — What happened?</div>
+
+    <div class="results-grid">
+      <div class="result-box">
+        <div class="result-emoji">🔵</div>
+        <div class="result-num r0" id="live0">—</div>
+        <div class="result-lbl">times we got <strong>0</strong></div>
+        <div class="result-bar"><div class="result-fill rf0" id="fill0" style="width:0%"></div></div>
+      </div>
+      <div class="result-box">
+        <div class="result-emoji">🟣</div>
+        <div class="result-num r1" id="live1">—</div>
+        <div class="result-lbl">times we got <strong>1</strong></div>
+        <div class="result-bar"><div class="result-fill rf1" id="fill1" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Plain-English verdict -->
+    <div class="what-box" id="whatBox"></div>
+
+    <!-- Bit stream -->
+    <div class="stream-q">Every single flip result (🔵 = 0, 🟣 = 1) — notice how random each one is!</div>
+    <div id="bitStream"></div>
+
+    <!-- Compare bars -->
+    <div style="margin-top:1.5rem">
+      <div class="compare-lbl">📊 Expected vs what we actually got:</div>
+      <div id="compareChart"></div>
+    </div>
+  </div>
+
+  <!-- All levels chart -->
+  <div class="card" id="allCard" style="display:none">
+    <div class="card-title">All 4 test levels — side by side</div>
+    <div class="all-grid" id="allGrid"></div>
+  </div>
+
+  <!-- Data table -->
+  <div class="card">
+    <div class="card-title">📋 Official data table</div>
+    <div class="tbl-hdr">
+      <button class="btn-copy" onclick="copyTable()">⎘ Copy for spreadsheet</button>
+    </div>
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Probability setting (IV)</th>
+            <th>Expected % of 0s</th>
+            <th>Expected % of 1s</th>
+            <th>Count of 0s</th>
+            <th>Count of 1s</th>
+            <th>Actual % of 0s</th>
+            <th>Actual % of 1s</th>
+            <th>How close? (deviation)</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr><td colspan="8" class="empty-row">Run a trial above to populate your data table.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Plain-English explainer -->
+  <div class="explainer">
+    <h2>🤔 What is this experiment about?</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">The big idea</div>
+        <h3>Quantum computers are weird</h3>
+        <p>Normal computers use bits — they're always exactly 0 or 1. Quantum computers use <strong>qubits</strong>, which can be <em>both at once</em> until you look at them.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">The question</div>
+        <h3>Can we fake it?</h3>
+        <p>Can a regular computer <strong>pretend</strong> to be a qubit? This simulator does exactly that — using random numbers to mimic quantum measurement.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">What we test</div>
+        <h3>Does the pattern hold?</h3>
+        <p>One result is random. But after <strong>100 tries</strong>, does the total match the probability we set? That's the experiment!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analogy -->
+  <div class="analogy">
+    <div class="analogy-icon">🪙</div>
+    <div>
+      <h3>Think of it like a weighted coin flip</h3>
+      <p>
+        A normal coin is 50/50 heads or tails. But imagine a <strong>loaded coin</strong> — maybe it lands heads 70% of the time.
+        You can't predict any single flip, but flip it 100 times and you'll get <strong>roughly 70 heads and 30 tails</strong>.
+        That's exactly how a qubit works — and that's what this simulator tests!
+      </p>
+    </div>
+  </div>
+
+  <!-- Glossary -->
+  <div class="card">
+    <div class="card-title">📖 Glossary — words you might not know</div>
+    <div class="glossary">
+      <div class="gloss-card">
+        <div class="gloss-term">Qubit</div>
+        <div class="gloss-def">Like a computer's bit, but quantum. It can be 0, 1, or <em>both at once</em> until measured.</div>
+      </div>
+      <div class="gloss-card">
+        <div class="gloss-term">Superposition</div>
+        <div class="gloss-def">A qubit being "both 0 and 1 at the same time" before you look at it. Measuring forces it to pick one.</div>
+      </div>
+      <div class="gloss-card">
+        <div class="gloss-term">Probability</div>
+        <div class="gloss-def">How likely something is to happen. 70% chance of 0 means: on average, 70 out of 100 flips will be 0.</div>
+      </div>
+      <div class="gloss-card">
+        <div class="gloss-term">Independent variable (IV)</div>
+        <div class="gloss-def">What we change on purpose. Here: the probability setting (50/50, 70/30, etc.)</div>
+      </div>
+      <div class="gloss-card">
+        <div class="gloss-term">Dependent variable (DV)</div>
+        <div class="gloss-def">What we measure. Here: how many 0s and 1s we actually get out of 100 flips.</div>
+      </div>
+      <div class="gloss-card">
+        <div class="gloss-term">Deviation</div>
+        <div class="gloss-def">How far off the actual result is from what we expected. Small deviation = simulator is working well!</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+<footer>⚛ Qubit Simulator · Science Fair 2025–26 · Vishwajith Sethuraman</footer>
 
 <script>
-    const slider = document.getElementById("prob");
-    const probText = document.getElementById("probValue");
+  let theta = 90; // degrees — this is the IV now
+  let prob = 0.5; // derived from theta via Born rule
+  let results = {};
 
-    slider.oninput = function() {
-        probText.innerText = this.value;
+  const PRESETS = [
+    {theta: 90,    prob: 0.5,  label:'θ=90° → 50/50 (control)'},
+    {theta: 48.6,  prob: 0.7,  label:'θ=48.6° → 70/30'},
+    {theta: 18.6,  prob: 0.9,  label:'θ=18.6° → 90/10'},
+    {theta: 161.4, prob: 0.1,  label:'θ=161.4° → 10/90'},
+  ];
+
+  /* ── Born rule: P(0) = cos²(θ/2) ── */
+  function bornRule(thetaDeg) {
+    const rad = (thetaDeg / 2) * (Math.PI / 180);
+    return Math.cos(rad) ** 2;
+  }
+
+  /* ── Core measurement using Born rule ── */
+  function measureQubit(thetaDeg) {
+    const prob0 = bornRule(thetaDeg);
+    const r = Math.random();
+    return r <= prob0 ? 0 : 1;
+  }
+
+  /* ── Slider (now controls θ) ── */
+  function onSlider(v) {
+    theta = parseFloat(v);
+    prob = bornRule(theta);
+    document.getElementById('thetaDisplay').textContent = Math.round(theta) + '°';
+    document.getElementById('probDisplay').textContent = Math.round(prob * 100) + '%';
+    document.querySelectorAll('.preset').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.preset').forEach(b => {
+      if (Math.abs(parseFloat(b.dataset.theta) - theta) < 0.5) b.classList.add('active');
+    });
+  }
+
+  function setPreset(val, el) {
+    theta = parseFloat(val);
+    prob = bornRule(theta);
+    document.getElementById('probSlider').value = theta;
+    document.getElementById('thetaDisplay').textContent = Math.round(theta) + '°';
+    document.getElementById('probDisplay').textContent = Math.round(prob * 100) + '%';
+    document.querySelectorAll('.preset').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  /* ── Single coin flip demo ── */
+  function singleFlip() {
+    const coin = document.getElementById('coin');
+    const lbl  = document.getElementById('coinLbl');
+    const result = measureQubit(theta);
+    coin.style.animation = 'none';
+    coin.offsetHeight;
+    coin.style.animation = result === 0
+      ? 'coinFlip 0.7s ease forwards'
+      : 'coinFlip1 0.7s ease forwards';
+    setTimeout(() => {
+      lbl.textContent = result === 0
+        ? `🔵 Got 0!  (Born rule says P(0)=${Math.round(prob*100)}% for θ=${Math.round(theta)}°)`
+        : `🟣 Got 1!  (Born rule says P(1)=${Math.round((1-prob)*100)}% for θ=${Math.round(theta)}°)`;
+    }, 400);
+  }
+
+  /* ── Run 100 trials ── */
+  function run() {
+    let count0 = 0, count1 = 0;
+    const bits = [];
+    for (let i = 0; i < 100; i++) {
+      const r = measureQubit(theta);
+      bits.push(r);
+      r === 0 ? count0++ : count1++;
     }
+    const label = getLabel(theta);
+    results[theta] = {c0: count0, c1: count1, label, prob};
+    showResults(count0, count1, prob, bits, theta);
+    updateTable();
+    updateAllChart();
+  }
 
-    function measureQubit(prob0) {
-        let r = Math.random();
-        return r <= prob0 ? 0 : 1;
+  function runAll() {
+    PRESETS.forEach(s => {
+      let c0=0, c1=0;
+      for(let i=0;i<100;i++){ measureQubit(s.theta)===0 ? c0++ : c1++; }
+      results[s.theta] = {c0, c1, label: s.label, prob: s.prob};
+    });
+    const cur = results[theta] || results[90];
+    if(cur){
+      const bits=[];
+      for(let i=0;i<cur.c0;i++) bits.push(0);
+      for(let i=0;i<cur.c1;i++) bits.push(1);
+      bits.sort(()=>Math.random()-0.5);
+      showResults(cur.c0, cur.c1, cur.prob, bits, theta);
     }
+    updateTable();
+    updateAllChart();
+  }
 
-    function run() {
-        let prob0 = parseFloat(slider.value);
-        let count0 = 0;
-        let count1 = 0;
+  function getLabel(t) {
+    const found = PRESETS.find(s => Math.abs(s.theta - t) < 0.5);
+    return found ? found.label : `θ=${Math.round(t)}° → P(0)=${Math.round(bornRule(t)*100)}%`;
+  }
 
-        for (let i = 0; i < 100; i++) {
-            let result = measureQubit(prob0);
-            if (result === 0) count0++;
-            else count1++;
-        }
+  /* ── Show results ── */
+  function showResults(c0, c1, p, bits, t) {
+    document.getElementById('resultsCard').style.display = 'block';
+    document.getElementById('live0').textContent = c0;
+    document.getElementById('live1').textContent = c1;
+    document.getElementById('fill0').style.width = c0 + '%';
+    document.getElementById('fill1').style.width = c1 + '%';
 
-        document.getElementById("output").innerHTML =
-            `0s: ${count0} <br>
-             1s: ${count1} <br>
-             %0: ${(count0/100*100).toFixed(2)}% <br>
-             %1: ${(count1/100*100).toFixed(2)}%`;
-    }
+    const exp0 = Math.round(p * 100), exp1 = 100 - exp0;
+    const dev  = Math.abs(c0 - exp0);
+    const pct0 = c0, pct1 = c1;
+
+    // Plain-English verdict
+    let verdictIcon = dev <= 5 ? '✅' : dev <= 10 ? '⚠️' : '❌';
+    let verdictText = dev <= 5
+      ? `Great match! We expected about ${exp0} zeros and got ${c0}. The difference is only ${dev} — that's normal randomness.`
+      : dev <= 10
+      ? `Close! We expected ${exp0} zeros and got ${c0}. A ${dev}% difference can happen with randomness.`
+      : `Bigger gap than expected — we wanted ${exp0} zeros but got ${c0}. This is ${dev}% off. Try running again!`;
+
+    document.getElementById('whatBox').innerHTML = `
+      <div class="verdict">${verdictIcon} What does this mean?</div>
+      We set θ = <strong>${Math.round(t||90)}°</strong>. The Born rule (P(0) = cos²(θ/2)) gives a probability of <strong>${exp0}% for 0</strong> and <strong>${exp1}% for 1</strong>.
+      After 100 measurements: we got <strong style="color:var(--cyan)">${c0} zeros</strong> and <strong style="color:var(--purple)">${c1} ones</strong>.
+      <br><br>${verdictText}
+      <br><br>🔑 <strong>Key insight:</strong> Each individual measurement was totally random — but 100 measurements together formed a pattern that matches the Born rule prediction!
+    `;
+
+    // Bit stream
+    const el = document.getElementById('bitStream');
+    el.innerHTML = '';
+    bits.forEach((b, i) => {
+      const d = document.createElement('div');
+      d.className = `bit bit-${b}`;
+      d.textContent = b;
+      d.style.animationDelay = (i * 7) + 'ms';
+      el.appendChild(d);
+    });
+
+    // Compare bars
+    document.getElementById('compareChart').innerHTML = `
+      <div class="bar-row">
+        <div class="bar-key">Expected 0s</div>
+        <div class="bar-track"><div class="bar-fill bf-exp" style="width:${exp0}%">${exp0}%</div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-key">Actual 0s</div>
+        <div class="bar-track"><div class="bar-fill bf-0" style="width:${pct0}%">${pct0}%</div></div>
+      </div>
+      <div style="height:8px"></div>
+      <div class="bar-row">
+        <div class="bar-key">Expected 1s</div>
+        <div class="bar-track"><div class="bar-fill bf-exp" style="width:${exp1}%">${exp1}%</div></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-key">Actual 1s</div>
+        <div class="bar-track"><div class="bar-fill bf-1" style="width:${pct1}%">${pct1}%</div></div>
+      </div>
+    `;
+  }
+
+  /* ── All levels chart ── */
+  function updateAllChart() {
+    const done = PRESETS.filter(s => results[s.theta]);
+    if(done.length < 2) return;
+    document.getElementById('allCard').style.display = 'block';
+    document.getElementById('allGrid').innerHTML = done.map(s => {
+      const r = results[s.theta];
+      const exp0 = Math.round(s.prob*100), exp1 = 100-exp0;
+      const dev = Math.abs(r.c0 - exp0);
+      const ok = dev<=5?'✅':dev<=10?'⚠️':'❌';
+      return `<div class="all-mini">
+        <div class="all-mini-title">${s.label}</div>
+        <div class="bar-row"><div class="bar-key" style="width:48px;font-size:10px">Exp 0</div><div class="bar-track"><div class="bar-fill bf-exp" style="width:${exp0}%">${exp0}%</div></div></div>
+        <div class="bar-row"><div class="bar-key" style="width:48px;font-size:10px">Got 0</div><div class="bar-track"><div class="bar-fill bf-0" style="width:${r.c0}%">${r.c0}%</div></div></div>
+        <div style="height:5px"></div>
+        <div class="bar-row"><div class="bar-key" style="width:48px;font-size:10px">Exp 1</div><div class="bar-track"><div class="bar-fill bf-exp" style="width:${exp1}%">${exp1}%</div></div></div>
+        <div class="bar-row"><div class="bar-key" style="width:48px;font-size:10px">Got 1</div><div class="bar-track"><div class="bar-fill bf-1" style="width:${r.c1}%">${r.c1}%</div></div></div>
+        <div style="margin-top:8px;font-size:12px;color:var(--muted)">${ok} Off by ${dev}%</div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ── Table ── */
+  function updateTable() {
+    const rows = PRESETS.filter(s => results[s.theta]);
+    if(!rows.length) return;
+    document.getElementById('tableBody').innerHTML = rows.map(s => {
+      const r = results[s.theta];
+      const exp0 = Math.round(s.prob*100), exp1 = 100-exp0;
+      const dev = Math.abs(r.c0-exp0);
+      const cls = dev<=5?'good':dev<=10?'ok':'bad';
+      return `<tr>
+        <td>${s.label}</td>
+        <td>${exp0}%</td><td>${exp1}%</td>
+        <td>${r.c0}</td><td>${r.c1}</td>
+        <td>${r.c0}%</td><td>${r.c1}%</td>
+        <td class="${cls}">${dev}% ${dev<=5?'✅':dev<=10?'⚠️':'❌'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function copyTable() {
+    let t = 'θ angle (IV)\tBorn Rule P(0)\tExpected % 0\tExpected % 1\tCount 0\tCount 1\tActual % 0\tActual % 1\tDeviation\n';
+    PRESETS.forEach(s => {
+      const r = results[s.theta]; if(!r) return;
+      const exp0 = Math.round(s.prob*100);
+      t += `${s.label}\tcos²(${s.theta/2}°)\t${exp0}%\t${100-exp0}%\t${r.c0}\t${r.c1}\t${r.c0}%\t${r.c1}%\t${Math.abs(r.c0-exp0)}%\n`;
+    });
+    navigator.clipboard.writeText(t).then(() => {
+      const b = document.querySelector('.btn-copy');
+      b.textContent = '✓ Copied!';
+      setTimeout(()=>b.textContent='⎘ Copy for spreadsheet', 2000);
+    });
+  }
+    let t = 'Probability Setting\tExpected % 0\tExpected % 1\tCount 0\tCount 1\tActual % 0\tActual % 1\tDeviation\n';
+    PRESETS.forEach(s => {
+      const r = results[s.prob]; if(!r) return;
+      const exp0 = Math.round(s.prob*100);
+      t += `${s.label}\t${exp0}%\t${100-exp0}%\t${r.c0}\t${r.c1}\t${r.c0}%\t${r.c1}%\t${Math.abs(r.c0-exp0)}%\n`;
+    });
+  function resetAll() {
+    results = {};
+    document.getElementById('resultsCard').style.display = 'none';
+    document.getElementById('allCard').style.display = 'none';
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="8" class="empty-row">Run a trial above to populate your data table.</td></tr>';
+    document.getElementById('coinLbl').textContent = '👆 Click the coin for a single flip!';
+  }
 </script>
-
 </body>
 </html>
